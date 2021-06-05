@@ -13,6 +13,20 @@
 // gcc -Wall `pkg-config fuse --cflags` fuse3.c -o fuse `pkg-config fuse --libs`
 
 static const char *dirpath = "/home/prabu/Downloads";
+static const char *pathLog = "/home/prabu/SinSeiFS.log";
+
+void logActivity(char *status, char *comm, char *desc){
+	FILE *fp = fopen(pathLog, "a+");
+	time_t t;
+	struct tm *tmp;
+	char tbuff[100];
+	time(&t);
+	tmp = localtime(&t);
+	strftime(tbuff, sizeof(tbuff), "%d%m%y-%H:%M:%S", tmp);
+
+	fprintf(fp, "%s::%s:%s::%s\n", status, tbuff, comm, desc);
+	fclose(fp);
+}
 
 void encodeSpecialFile(char *custPath, char *path){
 	char namaFile[500], ext[500], *token, temp[500];
@@ -100,6 +114,34 @@ static int xmp_getattr(const char *path, struct stat *stbuf){
 
 	if(res == -1) return -errno;
 
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "GETATTR", desc);
+
+	return 0;
+}
+
+static int xmp_readlink(const char *path, char *buf, size_t size){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else{
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+
+	int res;
+	res = readlink(fpath, buf, size - 1);
+	if(res == -1) return -errno;
+
+	buf[res] = '\0';
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "READLINK", desc);
+
 	return 0;
 }
 
@@ -133,12 +175,12 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 		st.st_mode = de->d_type << 12;
 
 		char custPath[1000];
-		if(de->d_type == DT_REG){
-			encodeSpecialFile(custPath, de->d_name);
-		}
-		else strcpy(custPath, de->d_name);
+		// if(de->d_type == DT_REG){
+		// 	encodeSpecialFile(custPath, de->d_name);
+		// }
+		// else strcpy(custPath, de->d_name);
 
-		// strcpy(custPath, de->d_name);
+		strcpy(custPath, de->d_name);
 
 		if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			res = (filler(buf, de->d_name, &st, 0));
@@ -147,9 +189,238 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 
 		if(res!=0) break;
 	}
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "READDIR", desc);
+
 	closedir(dp);
 
 	return 0;
+}
+
+static int xmp_mkdir(const char *path, mode_t mode){
+	char fpath[1000];
+	
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else{
+		sprintf(fpath, "%s%s", dirpath, path);
+	}
+
+	int res;
+	res = mkdir(fpath, mode);
+	if(res == -1) return -errno;
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "MKDIR", desc);
+
+	return 0;
+}
+
+static int xmp_link(const char *from, const char *to){
+	char fpath[1000], tpath[1000];
+	
+	if(strcmp(from, "/") == 0){
+		from = dirpath;
+		sprintf(fpath, "%s", from);
+	}
+	else{
+		sprintf(fpath, "%s%s", dirpath, from);
+	}
+
+	if(strcmp(to, "/") == 0){
+		to = dirpath;
+		sprintf(tpath, "%s", to);
+	}
+	else{
+		sprintf(tpath, "%s%s", dirpath, to);
+	}
+
+	int res;
+	res = link(fpath, tpath);
+	if(res == -1) return -errno;
+
+	char desc[10000];
+	sprintf(desc, "%s::%s", fpath, tpath);
+	logActivity("INFO", "LINK", desc);
+
+	return 0;
+}
+
+static int xmp_unlink(const char *path){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int res;
+	res = unlink(fpath);
+	if(res == -1) return -errno;
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("WARNING", "UNLINK", desc);
+
+	return 0;
+}
+
+static int xmp_rmdir(const char *path){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int res;
+	res = rmdir(fpath);
+	if(res == -1) return -errno;
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("WARNING", "RMDIR", desc);
+
+	return 0;
+}
+
+static int xmp_symlink(const char *from, const char *to){
+	char fpath[1000], tpath[1000];
+	
+	if(strcmp(from, "/") == 0){
+		from = dirpath;
+		sprintf(fpath, "%s", from);
+	}
+	else{
+		sprintf(fpath, "%s%s", dirpath, from);
+	}
+
+	if(strcmp(to, "/") == 0){
+		to = dirpath;
+		sprintf(tpath, "%s", to);
+	}
+	else{
+		sprintf(tpath, "%s%s", dirpath, to);
+	}
+
+	int res;
+	res = symlink(fpath, tpath);
+	if(res == -1) return -errno;
+
+	char desc[10000];
+	sprintf(desc, "%s::%s", fpath, tpath);
+	logActivity("INFO", "SYMLINK", desc);
+
+	return 0;
+}
+
+static int xmp_rename(const char *from, const char *to){
+	char fpath[1000], tpath[1000];
+	
+	if(strcmp(from, "/") == 0){
+		from = dirpath;
+		sprintf(fpath, "%s", from);
+	}
+	else{
+		sprintf(fpath, "%s%s", dirpath, from);
+	}
+
+	if(strcmp(to, "/") == 0){
+		to = dirpath;
+		sprintf(tpath, "%s", to);
+	}
+	else{
+		sprintf(tpath, "%s%s", dirpath, to);
+	}
+
+	int res;
+
+	res = rename(fpath, tpath);
+	if(res == -1) return -errno;
+
+	char desc[10000];
+	sprintf(desc, "%s::%s", fpath, tpath);
+	logActivity("INFO", "RENAME", desc);
+
+	return 0;
+}
+
+static int xmp_create(const char *path, mode_t mode, struct fuse_file_info *fi){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int res;
+	res = open(fpath, fi->flags, mode);
+	if(res == -1) return -errno;
+	fi->fh = res;
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "CREATE", desc);
+
+	return 0;
+}
+
+static int xmp_open(const char *path, struct fuse_file_info *fi){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int res;
+	res = open(fpath, fi->flags);
+	if(res == -1) return -errno;
+
+	fi->fh = res;
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "OPEN", desc);
+
+	return 0;
+}
+
+static int xmp_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int fd;
+	int res;
+	(void) fi;
+	if(fi == NULL) fd = open(fpath, O_WRONLY);
+	else fd = fi->fh;
+
+	if(fd == -1) return -errno;
+
+	res = pwrite(fd, buf, size, offset);
+	if(res == -1) res = -errno;
+	if(fi == NULL) close(fd);
+
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "WRITE", desc);
+
+	return res;
 }
 
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi){
@@ -176,13 +447,45 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset, stru
 
 	close(fd);
 
+	char desc[100];
+	strcpy(desc, path);
+	logActivity("INFO", "READ", desc);
+
 	return res;
+}
+
+static int xmp_utimens(const char *path, const struct timespec ts[2]){
+	char fpath[1000];
+
+	if(strcmp(path, "/") == 0){
+		path = dirpath;
+		sprintf(fpath, "%s", path);
+	}
+	else sprintf(fpath, "%s%s", dirpath, path);
+
+	int res;
+
+	res = utimensat(0, fpath, ts, AT_SYMLINK_NOFOLLOW);
+	if(res == -1) return -errno;
+	return 0;
 }
 
 static struct fuse_operations xmp_oper = {
 	.getattr = xmp_getattr,
+	.mkdir = xmp_mkdir,
 	.readdir = xmp_readdir,
+	.rmdir = xmp_rmdir,
+	.symlink = xmp_symlink,
 	.read = xmp_read,
+	.readlink = xmp_readlink,
+	.link = xmp_link,
+	.unlink = xmp_unlink,
+	.rename = xmp_rename,
+	.create = xmp_create,
+	.open = xmp_open,
+	.write = xmp_write,
+	.utimens = xmp_utimens,
+
 };
 
 int main(int argc, char *argv[]){
