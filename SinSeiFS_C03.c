@@ -11,17 +11,17 @@
 #include <errno.h>
 #include <stdlib.h>
 
-static  const  char *dirpath = "./test-src";
+static  const  char *dirpath = "/home/[USER]/Downloads";
 
 
-// int vigenere_verify(char *str, const char *key, size_t key_length) {
+int vigenere_verify(char *str, const char *key, size_t key_length) {
 //     size_t i, strlength = strlen(str);
 //     for (i = 0; i < key_length || i < strlength; ++i) {
 
 //     }
 
-//     return 1;
-// }
+    return 1; // untuk sementara selalu benar dahulu
+}
 
 int atbash_encoder(char *str) {
     size_t i, strlength = strlen(str);
