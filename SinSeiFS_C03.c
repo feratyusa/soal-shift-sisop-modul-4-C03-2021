@@ -23,6 +23,81 @@ int vigenere_verify(char *str, const char *key, size_t key_length) {
     return 1; // untuk sementara selalu benar dahulu
 }
 
+void encodeSpecialFile(char *custPath, char *path){
+	char namaFile[500], ext[500], *token, temp[500];
+	strcpy(temp, path);
+	// Nama file
+	token = strtok(temp, ".");
+	strcpy(namaFile, token);
+	// Exstension
+	token = strtok(NULL, ".");
+	strcpy(ext, token);
+	// strcat(ext, ".");
+
+	// Encrypt
+	int i;
+	char lowNamaFile[500], enc[500];
+	memset(enc, '\0', 500);
+	strcpy(lowNamaFile, namaFile);
+	for(i=0;i<strlen(lowNamaFile);i++) lowNamaFile[i] = tolower(lowNamaFile[i]);
+	for(i=0;i<strlen(namaFile);i++){
+		if(namaFile[i] != lowNamaFile[i]) strcat(enc, "1");
+		else strcat(enc, "0");
+	}
+		
+	// // Biner to Dec
+	int num=0;
+	double a = 0.00;
+	for(i=strlen(enc)-1;i>=0;i--){
+		if(enc[i] == '1') num = num + (int)pow(2.00, a);
+		a += 1;
+	}
+
+	sprintf(custPath, "%s.%s.%d", lowNamaFile, ext, num);
+}
+
+void decodeSpecialFile(char *custPath, char *path){
+	char namaFile[500], ext[500], encryption[500], *token, temp[500];
+	strcpy(temp, path);
+	// Nama file
+	token = strtok(temp, ".");
+	strcpy(namaFile, token);
+	// Exstension
+	token = strtok(NULL, ".");
+	strcpy(ext, token);
+	// encryption
+	token = strtok(NULL, ".");
+	strcpy(encryption, token);
+
+	int i;
+	// Decimal to Biner
+	
+	int ten=1, num=0;
+	for(i=strlen(encryption)-1;i>=0;i--){
+		num = num + ((int)encryption[i]-48) * ten;
+		ten *= 10;
+	}
+
+	char binerRev[500];
+	memset(binerRev, '\0', 500);
+	while(num > 0){
+		if(num%2 == 1) strcat(binerRev, "1");
+		else strcat(binerRev, "0");
+		num /= 2;
+	}
+	char biner[500];
+	int j = 0;
+	for(i=strlen(binerRev)-1;i>=0;i--) biner[j++] = binerRev[i];
+
+	// Decrypt
+	char decodeFile[500];
+	for(i=0;i<strlen(biner);i++)
+		if(biner[i] == '1') decodeFile[i] = toupper(namaFile[i]);
+		else decodeFile[i] = namaFile[i];
+
+	sprintf(custPath, "%s.%s", decodeFile, ext);
+}
+
 int atbash_encoder(char *str) {
     size_t i, strlength = strlen(str);
     // char *tmp = malloc(sizeof(char) * strlength);
@@ -270,6 +345,17 @@ static struct fuse_operations xmp_oper = {
 
 int  main(int  argc, char *argv[])
 {
+    /* Testing encode decoder nomor3 */
+    char specialFile[] = "FiLe_CoNtoH.txt";
+
+	char enc[1000];
+	encodeSpecialFile(enc, specialFile);
+	printf("Encode Nomor 3: %s\n", enc);
+
+	char dec[1000];
+	decodeSpecialFile(dec, enc);
+	printf("Decode Nomor 3: %s\n", dec);
+    
     /* Testing encoder decoder */
     char test_atbash[] = "TEST_ATBASH";
     char test_rot13[] = "TEST_ROT13";
