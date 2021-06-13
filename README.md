@@ -29,6 +29,63 @@ static struct fuse_operations xmp_oper = {
 Fungsi-fungsi tersebut dipilih sehingga di dalam fuse dapat dilakukan operasi untuk membuat (`mkdir` dan `touch`), menghapus (`rm` dan `rm -r`), dan mengganti nama (`mv`) folder atau file.
 
 ## 1
+Encoder Atbash sebagai berikut
+```c
+int atbash_encoder(char *str) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position;
+
+    for (i = 0; i < strlength; ++i) {
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = 25 - position;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = 25 - position;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+```
+Decoder Atbash sebagai berikut.
+```c
+int atbash_decoder(char *str) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position;
+
+    for (i = 0; i < strlength; ++i) {
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = 25 - position;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = 25 - position;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+```
+Berdasarkan yang user lakukan, program akan melakukan enkripsi dan dekripsi berdasarkan perintah yang dijalankan.
+
+### Kendala
+Kurangnya referensi untuk FUSE pada tingkatan medium membuat pembelajaran menjadi lebih susah.
+
 ## 2
 ### Penjelasan Solusi
 Enkripsi tambahan Vigenere dan ROT13 ditambahkan ke kode.
