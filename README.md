@@ -30,6 +30,123 @@ Fungsi-fungsi tersebut dipilih sehingga di dalam fuse dapat dilakukan operasi un
 
 ## 1
 ## 2
+### Penjelasan Solusi
+Enkripsi tambahan Vigenere dan ROT13 ditambahkan ke kode.
+```c
+int rot13_encoder(char *str) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position;
+
+    for (i = 0; i < strlength; ++i) {
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = (position + 13) % 26;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = (position + 13) % 26;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+
+int vigenere_encoder(char *str, const char *key, size_t key_length) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position, key_pos, key_subtractor;
+
+    if (key[0] >= 97) key_subtractor = 97;
+    else key_subtractor = 65;
+
+    for (i = 0; i < strlength; ++i) {
+        key_pos = i % key_length;
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = (position + key[key_pos] - key_subtractor) % 26;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = (position + key[key_pos] - key_subtractor) % 26;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+```
+Dekripsi yang dari Vigenere dan ROT13.
+```c
+int rot13_decoder(char *str) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position;
+
+    for (i = 0; i < strlength; ++i) {
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = (position + 13) % 26;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = (position + 13) % 26;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+
+int vigenere_decoder(char *str, const char *key, size_t key_length) {
+    size_t i, strlength = strlen(str);
+    // char *tmp = malloc(sizeof(char) * strlength);
+    int position, key_pos, key_subtractor;
+
+    if (key[0] >= 97) key_subtractor = 97;
+    else key_subtractor = 65;
+
+    for (i = 0; i < strlength; ++i) {
+        key_pos = i % key_length;
+        if (str[i] >= 65 && str[i] <= 90) {
+            position = str[i] - 65;
+            position = (position - (key[key_pos] - key_subtractor));
+            if (position < 0) position = 26 + position;
+            // tmp[i] = position + 65;
+            str[i] = position + 65;
+        } else if (str[i] >= 97 && str[i] <= 122) {
+            position = str[i] - 97;
+            position = (position - (key[key_pos] - key_subtractor));
+            if (position < 0) position = 26 + position;
+            // tmp[i] = position + 97;
+            str[i] = position + 97;
+        } else {
+            // tmp[i] = str[i];
+        }
+    }
+
+    return 0;
+}
+```
+Berdasarkan yang user lakukan, program akan melakukan enkripsi dan dekripsi berdasarkan perintah yang dijalankan.
+
+![image](https://user-images.githubusercontent.com/40772378/121810113-b689c480-cc89-11eb-8376-a9b6080e631e.png)
+
+### Kendala
+Belum lihai menggunakan FUSE, ditambah kurangnya tutorial medium-advanced FUSE yang detail dalam menjelaskan syntax-syntax yang digunakan, sehingga mengurangi keefisienan pembelajaran. Lalu, terdapat kebingungan mengenai bagaimana cara melacak bahwa user telah melakukan rename pada sebuah folder, ide yang kami akan terapkan adalah pengecekan jika nama folder adalah hasil enkripsi Vigenere dengan key `SISOP`, namun tidak tahu bagaimana implementasinya.
 ## 3
 ### Penjelasan Solusi
 Pada soal ini terdapat sebuah enkripsi nama file yang harus dilakukan. Enkripsi ini adalah nama file dibuat lowercase semua lalu hasil dari lowercase dibandingkan dengan nama aslinya jika terdapat perbedaan maka nilainya 1, jika sama maka nilainya 0. Sehingga, misal terdapat nama file "FiLe_CoNtoH.txt" maka lowercasenya "file_contoh.txt" dan hasil perbandingannya adalah "10100101001". Hasil perbandingan tersebut dibuat dari bilangan biner menjadi bilangan desimal sehingga nilai desimalnya adalah 1321 lalu diletakkan setealah ekstensi nama file tersebut sehingga enkripsinya menjadi `file_contoh.txt.1321`.
