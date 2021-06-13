@@ -84,7 +84,7 @@ int atbash_decoder(char *str) {
 Berdasarkan yang user lakukan, program akan melakukan enkripsi dan dekripsi berdasarkan perintah yang dijalankan.
 
 ### Kendala
-Kurangnya referensi untuk FUSE pada tingkatan medium membuat pembelajaran menjadi lebih susah.
+Kurangnya referensi untuk FUSE pada tingkatan medium di internet membuat pembelajaran menjadi lebih bingung dalam pengimplementasiannya sesuai dengan deskripsi soal.
 
 ## 2
 ### Penjelasan Solusi
