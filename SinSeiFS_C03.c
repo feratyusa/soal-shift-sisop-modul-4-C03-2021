@@ -651,7 +651,6 @@ static struct fuse_operations xmp_oper = {
 	.open = xmp_open,
 	.write = xmp_write,
 	.utimens = xmp_utimens,
-
 };
 
 int  main(int  argc, char *argv[])
