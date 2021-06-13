@@ -160,5 +160,10 @@ static int xmp_rmdir(const char *path){
 }
 ```
 
+| ![image](https://user-images.githubusercontent.com/68368240/121806974-53ddfc00-cc7c-11eb-911c-a0a6d0df39ae.png) |
+---
+| logging |
+
+
 ### Kendala
 Sama dengan kendala nomor 3, masih kurang paham bagaimana rekursif dalam pembuatan fuse sehingga kurang memahami untuk membuat enkripsi dari setiap folder dan file.
